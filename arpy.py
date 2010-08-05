@@ -153,7 +153,7 @@ class Archive(object):
 		self.gnu_table = None
 		self.archived_files = {}
 
-	def _read_file_header(self, offset = None):
+	def __read_file_header(self, offset = None):
 		""" Reads and returns a single new file header """
 		if offset is not None:
 			self.file.seek(offset)
@@ -169,18 +169,18 @@ class Archive(object):
 		
 		file_header = ArchiveFileHeader(header, offset)
 		if file_header.type == HEADER_GNU_TABLE:
-			self._read_gnu_table(file_header.size)
+			self.__read_gnu_table(file_header.size)
 			
-		add_len = self._fix_name(file_header)
+		add_len = self.__fix_name(file_header)
 		file_header.file_offset = offset + HEADER_LEN + add_len
 
 		if offset == self.next_header_offset:
 			new_offset = offset + HEADER_LEN + add_len + file_header.size
-			self.next_header_offset = Archive._pad2(new_offset)
+			self.next_header_offset = Archive.__pad2(new_offset)
 
 		return file_header
 
-	def _read_gnu_table(self, size):
+	def __read_gnu_table(self, size):
 		""" Reads the table of filenames specific to GNU ar format """
 		table_string = self.file.read(size)
 		if len(table_string) != size:
@@ -193,7 +193,7 @@ class Archive(object):
 			self.gnu_table[position] = filename
 			position += len(filename) + 1
 
-	def _fix_name(self, header):
+	def __fix_name(self, header):
 		"""
 		Corrects the long filename using the format-specific method.
 		That means either looking up the name in GNU filename table, or
@@ -203,7 +203,7 @@ class Archive(object):
 			pass
 
 		elif header.type == HEADER_BSD:
-			filename_len = Archive._get_bsd_filename_len(header.name)
+			filename_len = Archive.__get_bsd_filename_len(header.name)
 			self.file.seek(header.offset + HEADER_LEN)
 			header.name = self.file.read(filename_len)
 			return filename_len
@@ -226,7 +226,7 @@ class Archive(object):
 		return 0
 
 	@staticmethod
-	def _pad2(num):
+	def __pad2(num):
 		""" Returns a 2-aligned offset """
 		if num % 2 == 0:
 			return num
@@ -234,7 +234,7 @@ class Archive(object):
 			return num+1
 
 	@staticmethod
-	def _get_bsd_filename_len(name):
+	def __get_bsd_filename_len(name):
 		""" Returns the length of the filename for a BSD style header """
 		filename_len = name[3:]
 		return int(filename_len)
@@ -243,7 +243,7 @@ class Archive(object):
 		"""
 		Reads a single new header, returning a its representation, or None at the end of file
 		"""
-		header = self._read_file_header(self.next_header_offset)
+		header = self.__read_file_header(self.next_header_offset)
 		if header is not None:
 			self.headers.append(header)
 			if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU):
