@@ -6,7 +6,7 @@ from distutils.core import setup
 setup(name='arpy',
 		version='0.1.0',
 		description='Library for accessing "ar" files',
-		author='Stanisław Pitucha',
+		author=u'Stanisław Pitucha',
 		author_email='viraptor@gmail.com',
 		url='http://bitbucket.org/viraptor/arpy',
 		py_modules=['arpy'],
