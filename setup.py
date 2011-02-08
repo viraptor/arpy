@@ -10,5 +10,6 @@ setup(name='arpy',
 		author_email='viraptor@gmail.com',
 		url='http://bitbucket.org/viraptor/arpy',
 		py_modules=['arpy'],
+		license="Simplified BSD",
 		)
 
