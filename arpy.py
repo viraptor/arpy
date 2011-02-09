@@ -106,6 +106,10 @@ class ArchiveFileHeader(object):
 					"cannot convert file header fields to integers", err)
 
 		self.offset = offset
+		name = name.rstrip()
+		if len(name) > 1:
+			name = name.rstrip('/')
+
 		if self.type == HEADER_NORMAL:
 			self.name = name.rstrip()
 			self.file_offset = offset + HEADER_LEN
@@ -245,9 +249,6 @@ class Archive(object):
 			if gnu_position not in self.gnu_table:
 				raise ArchiveFormatError("file references a name not present in the index")
 			header.name = self.gnu_table[gnu_position]
-			if not header.name.endswith('/'):
-				raise ArchiveFormatError("GNU filename not ending with a '/'")
-			header.name = header.name[:-1]
 			
 		else:
 			raise NotImplementedError("strange header, not implemented yet")
