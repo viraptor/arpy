@@ -250,6 +250,9 @@ class Archive(object):
 				raise ArchiveFormatError("file references a name not present in the index")
 			header.name = self.gnu_table[gnu_position]
 			
+		elif header.type == HEADER_GNU_SYMBOLS:
+			pass
+
 		else:
 			raise NotImplementedError("strange header, not implemented yet")
 		
