@@ -178,7 +178,7 @@ class Archive(object):
 	def __init__(self, filename):
 		self.headers = []
 		self.filename = filename
-		self.file = open(self.filename, "r")
+		self.file = open(self.filename, "rb")
 		if self.file.read(GLOBAL_HEADER_LEN) != "!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
 		
