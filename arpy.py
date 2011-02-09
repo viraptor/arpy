@@ -37,8 +37,8 @@ In order to read the file, create a new proxy with:
 ar = arpy.Archive('some_ar_file')
 ar.read_all_headers()
 
-The list of files can be listed through:
-ar.archived_files.values()
+The list of file names can be listed through:
+ar.archived_files.keys()
 
 Files themselves can be opened by getting the value of:
 f = ar.archived_files['filename']
