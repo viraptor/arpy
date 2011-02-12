@@ -125,7 +125,7 @@ class ArchiveFileHeader(object):
 					HEADER_TYPES[self.type], self.size)
 		else:
 			return '''<ArchiveFileHeader: "%s" type:%s>''' % (self.name,
-					HEADER_TYPES[self.type])
+					HEADER_TYPES.get(self.type, "unknown %i" % (self.type,)))
 
 class ArchiveFileData(object):
 	""" File-like object used for reading an archived file """
