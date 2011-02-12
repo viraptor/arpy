@@ -96,7 +96,7 @@ class ArchiveFileHeader(object):
 		try:
 			self.size = int(size)
 
-			if self.type in (HEADER_NORMAL, HEADER_BSD):
+			if self.type in (HEADER_NORMAL, HEADER_BSD, HEADER_GNU):
 				self.timestamp = int(timestamp)
 				self.uid = int(uid)
 				self.gid = int(gid)
