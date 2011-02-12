@@ -111,7 +111,7 @@ class ArchiveFileHeader(object):
 			name = name.rstrip('/')
 
 		if self.type == HEADER_NORMAL:
-			self.name = name.rstrip()
+			self.name = name
 			self.file_offset = offset + HEADER_LEN
 		else:
 			self.name = None
