@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='arpy',
 		version='0.2.0',
@@ -11,6 +11,7 @@ setup(name='arpy',
 		url='http://bitbucket.org/viraptor/arpy',
 		py_modules=['arpy'],
 		license="Simplified BSD",
+		test_suite='test',
 		long_description="""'arpy' is a library for accessing the archive files and reading the contents. It supports extended long filenames in both GNU and BSD format. Right now it does not support the symbol tables.
 
 Usage instructions are included in the module docstring. No fancy features were used, so it should work on any reasonable version of python 2.""",
