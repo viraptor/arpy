@@ -224,7 +224,7 @@ class Archive(object):
 		
 		position = 0
 		for filename in table_string.split("\n"):
-			self.gnu_table[position] = filename
+			self.gnu_table[position] = filename[:-1] # remove trailing '/'
 			position += len(filename) + 1
 
 	def __fix_name(self, header):
