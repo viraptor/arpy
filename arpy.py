@@ -176,10 +176,9 @@ class ArchiveFileData(object):
 
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
-	def __init__(self, filename):
+	def __init__(self, filename=None, fileobj=None):
 		self.headers = []
-		self.filename = filename
-		self.file = open(self.filename, "rb")
+		self.file = fileobj or open(filename, "rb")
 		if self.file.read(GLOBAL_HEADER_LEN) != "!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
 		
