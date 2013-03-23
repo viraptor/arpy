@@ -1,4 +1,5 @@
 syntax: glob
 *.pyc
+*.sw[op]
 .tox
 arpy.egg-info

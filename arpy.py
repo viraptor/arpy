@@ -79,16 +79,16 @@ class ArchiveFileHeader(object):
 		
 		name, timestamp, uid, gid, mode, size, magic = struct.unpack(
 				"16s 12s 6s 6s 8s 10s 2s", header)
-		if magic != "\x60\x0a":
+		if magic != b"\x60\x0a":
 			raise ArchiveFormatError("file header magic doesn't match")
 
-		if name.startswith("#1/"):
+		if name.startswith(b"#1/"):
 			self.type = HEADER_BSD
-		elif name.startswith("//"):
+		elif name.startswith(b"//"):
 			self.type = HEADER_GNU_TABLE
-		elif name.strip() == "/":
+		elif name.strip() == b"/":
 			self.type = HEADER_GNU_SYMBOLS
-		elif name.startswith("/"):
+		elif name.startswith(b"/"):
 			self.type = HEADER_GNU
 		else:
 			self.type = HEADER_NORMAL
@@ -102,14 +102,14 @@ class ArchiveFileHeader(object):
 				self.gid = int(gid)
 				self.mode = int(mode, 8)
 
-		except ValueError, err:
+		except ValueError as err:
 			raise ArchiveFormatError(
 					"cannot convert file header fields to integers", err)
 
 		self.offset = offset
 		name = name.rstrip()
 		if len(name) > 1:
-			name = name.rstrip('/')
+			name = name.rstrip(b'/')
 
 		if self.type == HEADER_NORMAL:
 			self.name = name
@@ -179,7 +179,7 @@ class Archive(object):
 	def __init__(self, filename=None, fileobj=None):
 		self.headers = []
 		self.file = fileobj or open(filename, "rb")
-		if self.file.read(GLOBAL_HEADER_LEN) != "!<arch>\n":
+		if self.file.read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
 		
 		self.next_header_offset = GLOBAL_HEADER_LEN
@@ -222,7 +222,7 @@ class Archive(object):
 		self.gnu_table = {}
 		
 		position = 0
-		for filename in table_string.split("\n"):
+		for filename in table_string.split(b"\n"):
 			self.gnu_table[position] = filename[:-1] # remove trailing '/'
 			position += len(filename) + 1
 
