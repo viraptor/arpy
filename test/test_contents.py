@@ -11,17 +11,41 @@ class ArContents(unittest.TestCase):
 		self.assertEqual(b'test_in_file_2\n', f2_contents)
 		ar.close()
 
-	def test_content_seeking(self):
-		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar'))
-		ar.read_all_headers()
 
-		f1 = ar.archived_files[b'file1']
-		contents_before = f1.read()
-		f1.seek(0)
-		contents_after = f1.read()
-		f1.seek(3)
-		contents_shifted = f1.read()
-		
+class ArContentsSeeking(unittest.TestCase):
+	def setUp(self):
+		self.ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar'))
+		self.ar.read_all_headers()
+
+		self.f1 = self.ar.archived_files[b'file1']
+
+	def tearDown(self):
+		self.ar.close()
+
+	def test_content_opens_at_zero(self):
+		self.assertEqual(0, self.f1.tell())
+
+	def test_seek_absolute(self):
+		contents_before = self.f1.read()
+		self.f1.seek(0)
+		contents_after = self.f1.read()
+		self.f1.seek(3)
+		contents_shifted = self.f1.read()
 		self.assertEqual(contents_before, contents_after)
 		self.assertEqual(contents_before[3:], contents_shifted)
-		ar.close()
+
+	def test_seek_relative(self):
+		contents_before = self.f1.read()
+		self.f1.seek(1)
+		self.f1.seek(1, 1)
+		contents_after = self.f1.read()
+		self.assertEqual(contents_before[2:], contents_after)
+
+	def test_seek_from_end(self):
+		contents_before = self.f1.read()
+		self.f1.seek(-4, 2)
+		contents_after = self.f1.read()
+		self.assertEqual(contents_before[-4:], contents_after)
+
+	def test_seek_failure(self):
+		self.assertRaises(arpy.ArchiveAccessError, self.f1.seek, 10, 10)
