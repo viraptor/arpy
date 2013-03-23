@@ -49,3 +49,6 @@ class ArContentsSeeking(unittest.TestCase):
 
 	def test_seek_failure(self):
 		self.assertRaises(arpy.ArchiveAccessError, self.f1.seek, 10, 10)
+
+	def test_seek_position_failure(self):
+		self.assertRaises(arpy.ArchiveAccessError, self.f1.seek, -1)

@@ -1,5 +1,7 @@
 syntax: glob
 *.pyc
 *.sw[op]
+*,cover
 .tox
+.coverage
 arpy.egg-info

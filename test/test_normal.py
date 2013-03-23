@@ -10,6 +10,12 @@ class SimpleNames(unittest.TestCase):
 				list(ar.archived_files.keys()))
 		self.assertEqual(1, len(ar.headers))
 		ar.close()
+
+	def test_header_description(self):
+		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'normal.ar'))
+		header = ar.read_next_header()
+		self.assertTrue(repr(header).startswith('<ArchiveFileHeader'))
+		ar.close()
 	
 	def test_empty_ar(self):
 		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'empty.ar'))

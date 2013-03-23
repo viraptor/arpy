@@ -186,12 +186,9 @@ class Archive(object):
 		self.gnu_table = None
 		self.archived_files = {}
 
-	def __read_file_header(self, offset = None):
+	def __read_file_header(self, offset):
 		""" Reads and returns a single new file header """
-		if offset is not None:
-			self.file.seek(offset)
-		else:
-			offset = self.file.tell()
+		self.file.seek(offset)
 
 		header = self.file.read(HEADER_LEN)
 
