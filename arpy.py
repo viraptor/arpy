@@ -121,12 +121,8 @@ class ArchiveFileHeader(object):
 
 	def __repr__(self):
 		""" Creates a human-readable summary of a header """
-		if self.type in (HEADER_NORMAL, HEADER_BSD, HEADER_GNU):
-			return '''<ArchiveFileHeader: "%s" type:%s size:%i>''' % (self.name,
-					HEADER_TYPES[self.type], self.size)
-		else:
-			return '''<ArchiveFileHeader: "%s" type:%s>''' % (self.name,
-					HEADER_TYPES.get(self.type, "unknown %i" % (self.type,)))
+		return '''<ArchiveFileHeader: "%s" type:%s size:%i>''' % (self.name,
+				HEADER_TYPES[self.type], self.size)
 
 class ArchiveFileData(object):
 	""" File-like object used for reading an archived file """
@@ -253,9 +249,6 @@ class Archive(object):
 			
 		elif header.type == HEADER_GNU_SYMBOLS:
 			pass
-
-		else:
-			raise NotImplementedError("strange header, not implemented yet")
 		
 		return 0
 
