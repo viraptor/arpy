@@ -76,7 +76,7 @@ class ArchiveFileHeader(object):
 	def __init__(self, header, offset):
 		""" Creates a new header from binary data starting at a specified offset """
 		import struct
-		
+
 		name, timestamp, uid, gid, mode, size, magic = struct.unpack(
 				"16s 12s 6s 6s 8s 10s 2s", header)
 		if magic != b"\x60\x0a":
@@ -205,7 +205,7 @@ class Archive(object):
 		file_header.file_offset = offset + HEADER_LEN + add_len
 
 		if offset == self.next_header_offset:
-			new_offset = offset + HEADER_LEN + add_len + file_header.size
+			new_offset = file_header.file_offset + file_header.size
 			self.next_header_offset = Archive.__pad2(new_offset)
 
 		return file_header
@@ -233,7 +233,11 @@ class Archive(object):
 			pass
 
 		elif header.type == HEADER_BSD:
-			filename_len = Archive.__get_bsd_filename_len(header.name)
+			filename_len = Archive.__get_bsd_filename_len(header.proxy_name)
+
+			# BSD format includes the filename in the file size
+			header.size -= filename_len
+
 			self.file.seek(header.offset + HEADER_LEN)
 			header.name = self.file.read(filename_len)
 			return filename_len
