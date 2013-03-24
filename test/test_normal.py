@@ -25,6 +25,17 @@ class SimpleNames(unittest.TestCase):
 		self.assertEqual(0, len(ar.headers))
 		ar.close()
 
+	def test_symbols(self):
+		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'sym.ar'))
+		syms = ar.read_next_header()
+		self.assertEqual(arpy.HEADER_GNU_SYMBOLS, syms.type)
+		self.assertEqual(4, syms.size)
+		ao = ar.read_next_header()
+		self.assertEqual(arpy.HEADER_NORMAL, ao.type)
+		self.assertEqual(0, ao.size)
+		self.assertEqual(b"a.o", ao.name)
+		ar.close()
+
 	def test_fileobj(self):
 		data = open(os.path.join(os.path.dirname(__file__), 'normal.ar'), "rb").read()
 		ar = arpy.Archive(fileobj=io.BytesIO(data))
