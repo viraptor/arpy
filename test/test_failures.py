@@ -28,3 +28,14 @@ class SimpleNames(unittest.TestCase):
 		ar.read_all_headers()
 		f1 = ar.archived_files[b'file1']
 		self.assertRaises(arpy.ArchiveAccessError, f1.read)
+
+	def test_bad_table_size(self):
+		bad_ar = b'!<arch>\n//                                              10        `\n'
+		ar = arpy.Archive(fileobj=io.BytesIO(bad_ar))
+		self.assertRaises(arpy.ArchiveFormatError, ar.read_all_headers)
+
+	def test_bad_table_reference(self):
+		bad_ar = b'!<arch>\n//                                               0        `\n' \
+			b'/9              1297730011  1000  1000  100644  0         `\n'
+		ar = arpy.Archive(fileobj=io.BytesIO(bad_ar))
+		self.assertRaises(arpy.ArchiveFormatError, ar.read_all_headers)
