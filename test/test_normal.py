@@ -44,3 +44,13 @@ class SimpleNames(unittest.TestCase):
 				list(ar.archived_files.keys()))
 		self.assertEqual(1, len(ar.headers))
 		ar.close()
+
+
+class ArchiveIteration(unittest.TestCase):
+	def test_iteration(self):
+		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'normal.ar'))
+		ar_iterator = iter(ar)
+		short = ar_iterator.next()
+		self.assertEqual(b'short', short.header.name)
+		self.assertRaises(StopIteration, ar_iterator.next)
+		ar.close()
