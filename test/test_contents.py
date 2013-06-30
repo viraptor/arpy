@@ -99,3 +99,10 @@ class ArContentsNoSeeking(unittest.TestCase):
 		self.assertEqual(b'file2', f.header.name)
 		self.assertEqual(b'xx', contents)
 		ar.close()
+
+	def test_seek_fail(self):
+		ar = arpy.Archive(fileobj=self.big_archive)
+		f1 = ar.next()
+		f2 = ar.next()
+		self.assertRaises(arpy.ArchiveAccessError, f1.read)
+		ar.close()

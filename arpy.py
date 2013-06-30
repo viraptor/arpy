@@ -177,6 +177,7 @@ class Archive(object):
 		self.headers = []
 		self.file = fileobj or open(filename, "rb")
 		self.position = 0
+		self._detect_seekable()
 		if self._read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
 		
@@ -184,16 +185,28 @@ class Archive(object):
 		self.gnu_table = None
 		self.archived_files = {}
 
+	def _detect_seekable(self):
+		if hasattr(self.file, 'seekable'):
+			self.seekable = self.file.seekable()
+		else:
+			try:
+				# .tell() will raise an exception as well
+				self.file.tell()
+				self.seekable = True
+			except:
+				self.seekable = False
+
 	def _read(self, length):
 		data = self.file.read(length)
 		self.position += len(data)
 		return data
 
 	def _seek(self, offset):
-		if offset < self.position:
-			# seek required, might fail
+		if self.seekable:
 			self.file.seek(offset)
 			self.position = self.file.tell()
+		elif offset < self.position:
+			raise ArchiveAccessError("cannot go back when reading archive from a stream")
 		else:
 			# emulate seek
 			while self.position < offset:
