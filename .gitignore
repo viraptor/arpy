@@ -5,3 +5,4 @@ __pycache__
 .tox
 .coverage
 arpy.egg-info
+dist
