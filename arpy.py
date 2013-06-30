@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2011 Stanisław Pitucha. All rights reserved.
+# Copyright 2013 Helmut Grohne. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are
 # permitted provided that the following conditions are met:
@@ -127,12 +128,12 @@ class ArchiveFileHeader(object):
 class ArchiveFileData(object):
 	""" File-like object used for reading an archived file """
 
-	def __init__(self, file_obj, header):
+	def __init__(self, ar_obj, header):
 		"""
 		Creates a new proxy for the archived file, reusing the archive's file descriptor
 		"""
 		self.header = header
-		self.file = file_obj
+		self.arobj = ar_obj
 		self.last_offset = 0
 
 	def read(self, size = None):
@@ -143,8 +144,8 @@ class ArchiveFileData(object):
 		if self.header.size < self.last_offset + size:
 			size = self.header.size - self.last_offset
 
-		self.file.seek(self.header.file_offset + self.last_offset)
-		data = self.file.read(size)
+		self.arobj._seek(self.header.file_offset + self.last_offset)
+		data = self.arobj._read(size)
 		if len(data) < size:
 			raise ArchiveAccessError("incorrect archive file")
 
@@ -175,18 +176,49 @@ class Archive(object):
 	def __init__(self, filename=None, fileobj=None):
 		self.headers = []
 		self.file = fileobj or open(filename, "rb")
-		if self.file.read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
+		self.position = 0
+		self._detect_seekable()
+		if self._read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
 		
 		self.next_header_offset = GLOBAL_HEADER_LEN
 		self.gnu_table = None
 		self.archived_files = {}
 
+	def _detect_seekable(self):
+		if hasattr(self.file, 'seekable'):
+			self.seekable = self.file.seekable()
+		else:
+			try:
+				# .tell() will raise an exception as well
+				self.file.tell()
+				self.seekable = True
+			except:
+				self.seekable = False
+
+	def _read(self, length):
+		data = self.file.read(length)
+		self.position += len(data)
+		return data
+
+	def _seek(self, offset):
+		if self.seekable:
+			self.file.seek(offset)
+			self.position = self.file.tell()
+		elif offset < self.position:
+			raise ArchiveAccessError("cannot go back when reading archive from a stream")
+		else:
+			# emulate seek
+			while self.position < offset:
+				if not self._read(min(4096, offset - self.position)):
+					# reached EOF before target offset
+					return
+
 	def __read_file_header(self, offset):
 		""" Reads and returns a single new file header """
-		self.file.seek(offset)
+		self._seek(offset)
 
-		header = self.file.read(HEADER_LEN)
+		header = self._read(HEADER_LEN)
 
 		if len(header) == 0:
 			return None
@@ -208,7 +240,7 @@ class Archive(object):
 
 	def __read_gnu_table(self, size):
 		""" Reads the table of filenames specific to GNU ar format """
-		table_string = self.file.read(size)
+		table_string = self._read(size)
 		if len(table_string) != size:
 			raise ArchiveFormatError("file too short to fit the names table")
 
@@ -234,8 +266,8 @@ class Archive(object):
 			# BSD format includes the filename in the file size
 			header.size -= filename_len
 
-			self.file.seek(header.offset + HEADER_LEN)
-			header.name = self.file.read(filename_len)
+			self._seek(header.offset + HEADER_LEN)
+			header.name = self._read(filename_len)
 			return filename_len
 
 		elif header.type == HEADER_GNU_TABLE:
@@ -274,7 +306,7 @@ class Archive(object):
 		if header is not None:
 			self.headers.append(header)
 			if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU):
-				self.archived_files[header.name] = ArchiveFileData(self.file, header)
+				self.archived_files[header.name] = ArchiveFileData(self, header)
 
 		return header
 

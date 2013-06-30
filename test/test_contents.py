@@ -1,5 +1,5 @@
 import arpy
-import unittest, os
+import unittest, os, io
 
 class ArContents(unittest.TestCase):
 	def test_archive_contents(self):
@@ -52,3 +52,57 @@ class ArContentsSeeking(unittest.TestCase):
 
 	def test_seek_position_failure(self):
 		self.assertRaises(arpy.ArchiveAccessError, self.f1.seek, -1)
+
+
+class NonSeekableIO(io.BytesIO):
+	def seek(self, *args):
+		raise Exception("Not seekable")
+
+	def seekable(self):
+		return False
+
+	def force_seek(self, *args):
+		io.BytesIO.seek(self, *args)
+
+
+class ArContentsNoSeeking(unittest.TestCase):
+	def setUp(self):
+		big_archive = NonSeekableIO()
+		big_archive.write(b"!<arch>\n")
+		big_archive.write(b"file1/          1364071329  1000  100   100644  5000      `\n")
+		big_archive.write(b" "*5000)
+		big_archive.write(b"file2/          1364071329  1000  100   100644  2         `\n")
+		big_archive.write(b"xx")
+		big_archive.force_seek(0)
+		self.big_archive = big_archive
+
+	def test_stream_read(self):
+		# make sure all contents can be read without seeking
+		ar = arpy.Archive(fileobj=self.big_archive)
+		f = ar.next()
+		contents = f.read()
+		self.assertEqual(b'file1', f.header.name)
+		self.assertEqual(b' '*5000, contents)
+		f = ar.next()
+		contents = f.read()
+		self.assertEqual(b'file2', f.header.name)
+		self.assertEqual(b'xx', contents)
+		ar.close()
+
+	def test_stream_skip_file(self):
+		# make sure skipping contents is possible without seeking
+		ar = arpy.Archive(fileobj=self.big_archive)
+		f = ar.next()
+		self.assertEqual(b'file1', f.header.name)
+		f = ar.next()
+		contents = f.read()
+		self.assertEqual(b'file2', f.header.name)
+		self.assertEqual(b'xx', contents)
+		ar.close()
+
+	def test_seek_fail(self):
+		ar = arpy.Archive(fileobj=self.big_archive)
+		f1 = ar.next()
+		f2 = ar.next()
+		self.assertRaises(arpy.ArchiveAccessError, f1.read)
+		ar.close()
