@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+*.sw[op]
+*,cover
+.tox
+.coverage
+arpy.egg-info
