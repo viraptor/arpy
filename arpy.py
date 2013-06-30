@@ -190,8 +190,6 @@ class Archive(object):
 		return data
 
 	def _seek(self, offset):
-		if offset < 0:
-			raise ArchiveAccessError("incorrect file position")
 		if offset < self.position:
 			# seek required, might fail
 			self.file.seek(offset)
