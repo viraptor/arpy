@@ -278,6 +278,18 @@ class Archive(object):
 
 		return header
 
+	def __next__(self):
+		while True:
+			header = self.read_next_header()
+			if header is None:
+				raise StopIteration
+			if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU):
+				return self.archived_files[header.name]
+	next = __next__
+
+	def __iter__(self):
+		return self
+
 	def read_all_headers(self):
 		""" Reads all headers """
 		while self.read_next_header() is not None:
