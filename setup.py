@@ -6,7 +6,7 @@ from setuptools import setup
 setup(name='arpy',
 		version='1.1.1',
 		description='Library for accessing "ar" files',
-		author=u'Stanisław Pitucha',
+		author='Stanisław Pitucha',
 		author_email='viraptor@gmail.com',
 		url='https://github.com/viraptor/arpy',
 		py_modules=['arpy'],
