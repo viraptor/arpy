@@ -1,5 +1,6 @@
 import arpy
-import unittest, os
+import unittest
+import os
 
 class GNUExtendedNames(unittest.TestCase):
 	def test_single_name(self):

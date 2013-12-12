@@ -1,6 +1,7 @@
 import arpy
 import io
-import unittest, os
+import unittest
+import os
 
 class SimpleNames(unittest.TestCase):
 	def test_single_name(self):
