@@ -1,6 +1,6 @@
 import arpy
 import io
-import unittest, os
+import unittest
 
 class SimpleNames(unittest.TestCase):
 	def test_not_ar_file(self):

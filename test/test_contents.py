@@ -1,5 +1,7 @@
 import arpy
-import unittest, os, io
+import unittest
+import os
+import io
 
 class ArContents(unittest.TestCase):
 	def test_archive_contents(self):
@@ -103,6 +105,6 @@ class ArContentsNoSeeking(unittest.TestCase):
 	def test_seek_fail(self):
 		ar = arpy.Archive(fileobj=self.big_archive)
 		f1 = ar.next()
-		f2 = ar.next()
+		ar.next()
 		self.assertRaises(arpy.ArchiveAccessError, f1.read)
 		ar.close()

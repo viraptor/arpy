@@ -1,5 +1,6 @@
 import arpy
-import unittest, os
+import unittest
+import os
 
 class BSDExtendedNames(unittest.TestCase):
 	def test_single_name(self):
