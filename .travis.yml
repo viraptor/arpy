@@ -9,4 +9,4 @@ install:
   - pip install flake8
 script:
   - nosetests
-  - flake8 *.py test
+  - flake8
