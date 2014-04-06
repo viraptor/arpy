@@ -171,6 +171,9 @@ class ArchiveFileData(object):
 			raise ArchiveAccessError("incorrect file position")
 		self.last_offset = offset
 
+	def seekable(self):
+		return True
+
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
 	def __init__(self, filename=None, fileobj=None):
