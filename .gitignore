@@ -6,3 +6,4 @@ __pycache__
 .coverage
 arpy.egg-info
 dist
+.mypy_cache
