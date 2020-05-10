@@ -166,7 +166,7 @@ class ArchiveFileData(object):
 			offset += self.header.size
 		else:
 			raise ArchiveAccessError("invalid argument")
-		
+
 		if offset < 0 or offset > self.header.size:
 			raise ArchiveAccessError("incorrect file position")
 		self.last_offset = offset
@@ -183,7 +183,7 @@ class Archive(object):
 		self._detect_seekable()
 		if self._read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
-		
+
 		self.next_header_offset = GLOBAL_HEADER_LEN
 		self.gnu_table = None
 		self.archived_files = {}
@@ -196,7 +196,7 @@ class Archive(object):
 				# .tell() will raise an exception as well
 				self.file.tell()
 				self.seekable = True
-			except:
+			except Exception:
 				self.seekable = False
 
 	def _read(self, length):
@@ -227,11 +227,11 @@ class Archive(object):
 			return None
 		if len(header) < HEADER_LEN:
 			raise ArchiveFormatError("file header too short")
-		
+
 		file_header = ArchiveFileHeader(header, offset)
 		if file_header.type == HEADER_GNU_TABLE:
 			self.__read_gnu_table(file_header.size)
-			
+
 		add_len = self.__fix_name(file_header)
 		file_header.file_offset = offset + HEADER_LEN + add_len
 
@@ -248,7 +248,7 @@ class Archive(object):
 			raise ArchiveFormatError("file too short to fit the names table")
 
 		self.gnu_table = {}
-		
+
 		position = 0
 		for filename in table_string.split(b"\n"):
 			self.gnu_table[position] = filename[:-1] # remove trailing '/'
@@ -281,10 +281,10 @@ class Archive(object):
 			if gnu_position not in self.gnu_table:
 				raise ArchiveFormatError("file references a name not present in the index")
 			header.name = self.gnu_table[gnu_position]
-			
+
 		elif header.type == HEADER_GNU_SYMBOLS:
 			pass
-		
+
 		return 0
 
 	@staticmethod
