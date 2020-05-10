@@ -6,6 +6,8 @@ python:
   - "pypy3"
 install:
   - pip install flake8
+  - pip install mypy
 script:
   - nosetests
   - flake8
+  - mypy arpy.py
