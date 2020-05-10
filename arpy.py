@@ -176,7 +176,6 @@ class ArchiveFileData(io.IOBase):
 			raise ArchiveAccessError("incorrect file position")
 		self.last_offset = offset
 
-		# TODO: test return
 		return offset
 
 	def seekable(self) -> bool:
