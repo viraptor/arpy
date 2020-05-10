@@ -55,6 +55,9 @@ class ArContentsSeeking(unittest.TestCase):
 	def test_seek_position_failure(self):
 		self.assertRaises(arpy.ArchiveAccessError, self.f1.seek, -1)
 
+	def test_check_seekable(self):
+		self.assertTrue(self.f1.seekable())
+
 
 class NonSeekableIO(io.BytesIO):
 	def seek(self, *args):
@@ -107,4 +110,10 @@ class ArContentsNoSeeking(unittest.TestCase):
 		f1 = ar.next()
 		ar.next()
 		self.assertRaises(arpy.ArchiveAccessError, f1.read)
+		ar.close()
+
+	def test_check_seekable(self):
+		ar = arpy.Archive(fileobj=self.big_archive)
+		f1 = ar.next()
+		self.assertFalse(f1.seekable())
 		ar.close()

@@ -172,7 +172,7 @@ class ArchiveFileData(object):
 		self.last_offset = offset
 
 	def seekable(self):
-		return True
+		return self.arobj.seekable
 
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
