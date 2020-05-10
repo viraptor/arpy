@@ -50,6 +50,10 @@ f.read([length])
 random access through seek and tell functions is supported on the archived files
 """
 
+import io
+from typing import Optional, List, Dict, BinaryIO, cast
+
+
 HEADER_BSD = 1
 HEADER_GNU = 2
 HEADER_GNU_TABLE = 3
@@ -73,8 +77,9 @@ class ArchiveAccessError(IOError):
 
 class ArchiveFileHeader(object):
 	""" File header of an archived file, or a special data segment """
+	file_offset: Optional[int]
 
-	def __init__(self, header, offset):
+	def __init__(self, header: bytes, offset: int):
 		""" Creates a new header from binary data starting at a specified offset """
 		import struct
 
@@ -120,15 +125,15 @@ class ArchiveFileHeader(object):
 			self.proxy_name = name
 			self.file_offset = None
 
-	def __repr__(self):
+	def __repr__(self) -> str:
 		""" Creates a human-readable summary of a header """
 		return '''<ArchiveFileHeader: "%s" type:%s size:%i>''' % (self.name,
 				HEADER_TYPES[self.type], self.size)
 
-class ArchiveFileData(object):
+class ArchiveFileData(io.IOBase):
 	""" File-like object used for reading an archived file """
 
-	def __init__(self, ar_obj, header):
+	def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader):
 		"""
 		Creates a new proxy for the archived file, reusing the archive's file descriptor
 		"""
@@ -136,7 +141,7 @@ class ArchiveFileData(object):
 		self.arobj = ar_obj
 		self.last_offset = 0
 
-	def read(self, size = None):
+	def read(self, size: Optional[int] = None) -> bytes:
 		""" Reads the data from the archived file, simulates file.read """
 		if size is None:
 			size = self.header.size
@@ -144,7 +149,7 @@ class ArchiveFileData(object):
 		if self.header.size < self.last_offset + size:
 			size = self.header.size - self.last_offset
 
-		self.arobj._seek(self.header.file_offset + self.last_offset)
+		self.arobj._seek(cast(int, self.header.file_offset) + self.last_offset)
 		data = self.arobj._read(size)
 		if len(data) < size:
 			raise ArchiveAccessError("incorrect archive file")
@@ -152,11 +157,11 @@ class ArchiveFileData(object):
 		self.last_offset += size
 		return data
 
-	def tell(self):
+	def tell(self) -> int:
 		""" Returns the position in archived file, simulates file.tell """
 		return self.last_offset
 
-	def seek(self, offset, whence = 0):
+	def seek(self, offset: int, whence: int = 0) -> int:
 		""" Sets the position in archived file, simulates file.seek """
 		if whence == 0:
 			pass # absolute
@@ -171,24 +176,36 @@ class ArchiveFileData(object):
 			raise ArchiveAccessError("incorrect file position")
 		self.last_offset = offset
 
-	def seekable(self):
+		# TODO: test return
+		return offset
+
+	def seekable(self) -> bool:
 		return self.arobj.seekable
 
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
-	def __init__(self, filename=None, fileobj=None):
+	headers: List[ArchiveFileHeader]
+	gnu_table: Dict[int,bytes]
+	archived_files: Dict[bytes,ArchiveFileData]
+
+	def __init__(self, filename: Optional[str] = None, fileobj: Optional[BinaryIO] = None):
 		self.headers = []
-		self.file = fileobj or open(filename, "rb")
+		if fileobj:
+			self.file = fileobj
+		elif filename:
+			self.file = open(filename, "rb")
+		else:
+			raise ValueError("either filename or fileobj argument needs to be given")
 		self.position = 0
 		self._detect_seekable()
 		if self._read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
 
 		self.next_header_offset = GLOBAL_HEADER_LEN
-		self.gnu_table = None
+		self.gnu_table = {}
 		self.archived_files = {}
 
-	def _detect_seekable(self):
+	def _detect_seekable(self) -> None:
 		if hasattr(self.file, 'seekable'):
 			self.seekable = self.file.seekable()
 		else:
@@ -199,12 +216,12 @@ class Archive(object):
 			except Exception:
 				self.seekable = False
 
-	def _read(self, length):
+	def _read(self, length: int) -> bytes:
 		data = self.file.read(length)
 		self.position += len(data)
 		return data
 
-	def _seek(self, offset):
+	def _seek(self, offset: int) -> None:
 		if self.seekable:
 			self.file.seek(offset)
 			self.position = self.file.tell()
@@ -217,7 +234,7 @@ class Archive(object):
 					# reached EOF before target offset
 					return
 
-	def __read_file_header(self, offset):
+	def __read_file_header(self, offset: int) -> Optional[ArchiveFileHeader]:
 		""" Reads and returns a single new file header """
 		self._seek(offset)
 
@@ -241,7 +258,7 @@ class Archive(object):
 
 		return file_header
 
-	def __read_gnu_table(self, size):
+	def __read_gnu_table(self, size: int) -> None:
 		""" Reads the table of filenames specific to GNU ar format """
 		table_string = self._read(size)
 		if len(table_string) != size:
@@ -254,7 +271,7 @@ class Archive(object):
 			self.gnu_table[position] = filename[:-1] # remove trailing '/'
 			position += len(filename) + 1
 
-	def __fix_name(self, header):
+	def __fix_name(self, header: ArchiveFileHeader) -> int:
 		"""
 		Corrects the long filename using the format-specific method.
 		That means either looking up the name in GNU filename table, or
@@ -288,7 +305,7 @@ class Archive(object):
 		return 0
 
 	@staticmethod
-	def __pad2(num):
+	def __pad2(num: int) -> int:
 		""" Returns a 2-aligned offset """
 		if num % 2 == 0:
 			return num
@@ -296,12 +313,12 @@ class Archive(object):
 			return num+1
 
 	@staticmethod
-	def __get_bsd_filename_len(name):
+	def __get_bsd_filename_len(name: bytes) -> int:
 		""" Returns the length of the filename for a BSD style header """
 		filename_len = name[3:]
 		return int(filename_len)
 
-	def read_next_header(self):
+	def read_next_header(self) -> Optional[ArchiveFileHeader]:
 		"""
 		Reads a single new header, returning a its representation, or None at the end of file
 		"""
@@ -313,7 +330,7 @@ class Archive(object):
 
 		return header
 
-	def __next__(self):
+	def __next__(self) -> ArchiveFileData:
 		while True:
 			header = self.read_next_header()
 			if header is None:
@@ -322,14 +339,14 @@ class Archive(object):
 				return self.archived_files[header.name]
 	next = __next__
 
-	def __iter__(self):
+	def __iter__(self) -> "Archive":
 		return self
 
-	def read_all_headers(self):
+	def read_all_headers(self) -> None:
 		""" Reads all headers """
 		while self.read_next_header() is not None:
 			pass
 
-	def close(self):
+	def close(self) -> None:
 		""" Closes the archive file descriptor """
 		self.file.close()
