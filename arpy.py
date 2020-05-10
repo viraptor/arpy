@@ -118,7 +118,7 @@ class ArchiveFileHeader(object):
 
 		if self.type == HEADER_NORMAL:
 			self.name = name
-			self.file_offset: Optional[int] = offset + HEADER_LEN
+			self.file_offset = cast(Optional[int], offset + HEADER_LEN)
 		else:
 			self.name = None
 			self.proxy_name = name
@@ -184,7 +184,7 @@ class Archive(object):
 	""" Archive object allowing reading of *.ar files """
 
 	def __init__(self, filename: Optional[str] = None, fileobj: Optional[BinaryIO] = None):
-		self.headers: List[ArchiveFileHeader] = []
+		self.headers = cast(List[ArchiveFileHeader], [])
 		if fileobj:
 			self.file = fileobj
 		elif filename:
@@ -197,8 +197,8 @@ class Archive(object):
 			raise ArchiveFormatError("file is missing the global header")
 
 		self.next_header_offset = GLOBAL_HEADER_LEN
-		self.gnu_table: Dict[int,bytes] = {}
-		self.archived_files: Dict[bytes,ArchiveFileData] = {}
+		self.gnu_table = cast(Dict[int,bytes], {})
+		self.archived_files = cast(Dict[bytes,ArchiveFileData], {})
 
 	def _detect_seekable(self) -> None:
 		if hasattr(self.file, 'seekable'):
