@@ -51,6 +51,7 @@ random access through seek and tell functions is supported on the archived files
 """
 
 import io
+import struct
 from typing import Optional, List, Dict, BinaryIO, cast
 
 
@@ -80,7 +81,6 @@ class ArchiveFileHeader(object):
 
 	def __init__(self, header: bytes, offset: int):
 		""" Creates a new header from binary data starting at a specified offset """
-		import struct
 
 		name, timestamp, uid, gid, mode, size, magic = struct.unpack(
 				"16s 12s 6s 6s 8s 10s 2s", header)
