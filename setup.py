@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name='arpy',
-		version='2.0.0',
+		version='2.0.1',
 		description='Library for accessing "ar" files',
 		author='Stanisław Pitucha',
 		author_email='viraptor@gmail.com',
@@ -14,7 +14,7 @@ setup(name='arpy',
 		test_suite='test',
 		long_description="""'arpy' is a library for accessing the archive files and reading the contents. It supports extended long filenames in both GNU and BSD format. Right now it does not support the symbol tables, but can ignore them gracefully.
 
-Usage instructions are included in the module docstring. Works with python >=2.6 and >=3.3, as well as pypy.""",
+Usage instructions are included in the module docstring. Works with python >=3.5, as well as pypy3. (for python 2.x see versions 1.*)""",
 		classifiers=[
 			"Development Status :: 5 - Production/Stable",
 			"License :: OSI Approved :: BSD License",
