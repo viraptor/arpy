@@ -7,6 +7,9 @@ class SimpleNames(unittest.TestCase):
 		self.assertRaises(arpy.ArchiveFormatError, arpy.Archive,
 			fileobj=io.BytesIO(b'not an ar file'))
 
+	def test_neither_file_not_filename(self):
+		self.assertRaises(ValueError, arpy.Archive, filename=None, fileobj=None)
+
 	def test_bad_file_header_magic(self):
 		bad_ar = b'!<arch>\nfile1/          1364071329  1000  100   100644  15        qq'
 		ar = arpy.Archive(fileobj=io.BytesIO(bad_ar))

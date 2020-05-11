@@ -18,10 +18,9 @@ Usage instructions are included in the module docstring. Works with python >=2.6
 		classifiers=[
 			"Development Status :: 5 - Production/Stable",
 			"License :: OSI Approved :: BSD License",
-			"Programming Language :: Python :: 2.6",
-			"Programming Language :: Python :: 2.7",
-			"Programming Language :: Python :: 3.2",
-			"Programming Language :: Python :: 3.3",
+			"Programming Language :: Python :: 3.5",
+			"Programming Language :: Python :: 3.6",
+			"Programming Language :: Python :: 3.7",
 			"Programming Language :: Python :: Implementation :: PyPy",
 			"Programming Language :: Python :: Implementation :: CPython",
 			"Topic :: System :: Archiving",

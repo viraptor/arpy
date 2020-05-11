@@ -29,9 +29,11 @@ class ArContentsSeeking(unittest.TestCase):
 
 	def test_seek_absolute(self):
 		contents_before = self.f1.read()
-		self.f1.seek(0)
+		pos = self.f1.seek(0)
+		self.assertEqual(pos, 0)
 		contents_after = self.f1.read()
-		self.f1.seek(3)
+		pos = self.f1.seek(3)
+		self.assertEqual(pos, 3)
 		contents_shifted = self.f1.read()
 		self.assertEqual(contents_before, contents_after)
 		self.assertEqual(contents_before[3:], contents_shifted)
@@ -39,13 +41,15 @@ class ArContentsSeeking(unittest.TestCase):
 	def test_seek_relative(self):
 		contents_before = self.f1.read()
 		self.f1.seek(1)
-		self.f1.seek(1, 1)
+		pos = self.f1.seek(1, 1)
+		self.assertEqual(pos, 2)
 		contents_after = self.f1.read()
 		self.assertEqual(contents_before[2:], contents_after)
 
 	def test_seek_from_end(self):
 		contents_before = self.f1.read()
-		self.f1.seek(-4, 2)
+		pos = self.f1.seek(-4, 2)
+		self.assertEqual(pos, 11)
 		contents_after = self.f1.read()
 		self.assertEqual(contents_before[-4:], contents_after)
 
