@@ -65,7 +65,7 @@ class ArContentsSeeking(unittest.TestCase):
 
 class NonSeekableIO(io.BytesIO):
 	def seek(self, *args):
-		raise Exception("Not seekable")
+		raise io.UnsupportedOperation("underlying stream is not seekable")
 
 	def seekable(self):
 		return False
