@@ -103,8 +103,14 @@ class ArchiveFileHeader(object):
 
 			if self.type in (HEADER_NORMAL, HEADER_BSD, HEADER_GNU):
 				self.timestamp = int(timestamp)
-				self.uid = int(uid)
-				self.gid = int(gid)
+				if uid.strip():
+					self.uid = cast(Optional[int], int(uid))
+				else:
+					self.uid = None
+				if gid.strip():
+					self.gid = cast(Optional[int], int(gid))
+				else:
+					self.gid = None
 				self.mode = int(mode, 8)
 
 		except ValueError as err:
