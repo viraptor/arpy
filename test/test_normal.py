@@ -17,7 +17,7 @@ class SimpleNames(unittest.TestCase):
 		header = ar.read_next_header()
 		self.assertTrue(repr(header).startswith('<ArchiveFileHeader'))
 		ar.close()
-	
+
 	def test_empty_ar(self):
 		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'empty.ar'))
 		ar.read_all_headers()
@@ -35,6 +35,13 @@ class SimpleNames(unittest.TestCase):
 		self.assertEqual(arpy.HEADER_NORMAL, ao.type)
 		self.assertEqual(0, ao.size)
 		self.assertEqual(b"a.o", ao.name)
+		ar.close()
+
+	def test_windows(self):
+		ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'windows.ar'))
+		file_header = ar.read_next_header()
+		self.assertIsNone(file_header.gid)
+		self.assertIsNone(file_header.uid)
 		ar.close()
 
 	def test_fileobj(self):
