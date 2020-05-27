@@ -389,13 +389,13 @@ class Archive(object):
 		if isinstance(name, bytes):
 			ar_file = self.archived_files.get(name)
 			if ar_file is None:
-				raise KeyError(f"There is no item named '{name}' in the archive")
+				raise KeyError(f"There is no item named {name!r} in the archive")
 
 			return ar_file
 
 		if isinstance(name, ArchiveFileHeader):
 			if name not in self.headers:
-				return KeyError("Provided header does not match this archive")
+				raise KeyError("Provided header does not match this archive")
 
 			return ArchiveFileData(ar_obj=self, header=name)
 

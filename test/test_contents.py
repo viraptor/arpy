@@ -32,15 +32,17 @@ class ArZipLike(unittest.TestCase):
 		f = self.ar.open(b'file1')
 		self.assertEqual(b'file1', f.header.name)
 
+	def test_openname_fail(self):
+		self.assertRaises(KeyError, self.ar.open, b'xxxx')
+
 	def test_openheader(self):
-		header = self.ar.namelist()[0]
+		header = self.ar.infolist()[0]
 		f = self.ar.open(header)
 		self.assertEqual(b'file1', f.header.name)
 
-	def test_openheader(self):
-		header = self.ar.namelist()[0]
-		f = self.ar.open(header)
-		self.assertEqual(b'file1', f.header.name)
+	def test_openheader_fail(self):
+		content = b"file1/          1364071329  1000  100   100644  5000      `\n"
+		self.assertRaises(KeyError, self.ar.open, arpy.ArchiveFileHeader(content, 0))
 
 
 class ArContentsSeeking(unittest.TestCase):
