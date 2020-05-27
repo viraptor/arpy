@@ -42,12 +42,21 @@ The list of file names can be listed through:
 ar.archived_files.keys()
 
 Files themselves can be opened by getting the value of:
-f = ar.archived_files['filename']
+f = ar.archived_files[b'filename']
 
 and read through:
 f.read([length])
 
-random access through seek and tell functions is supported on the archived files
+random access through seek and tell functions is supported on the archived files.
+
+zipfile-like interface is also available:
+
+ar.namelist() will return a list of names (with possible duplicates)
+ar.infolist() will return a list of headers
+
+Use ar.open(name / header) to get the specific file.
+
+You can also use context manager syntax with either the ar file or its contents.
 """
 
 import io
