@@ -186,6 +186,13 @@ class ArchiveFileData(io.IOBase):
 	def seekable(self) -> bool:
 		return self.arobj.seekable
 
+	def __enter__(self):
+		return self
+
+	def __exit__(self, _exc_type, _exc_value, _traceback):
+		return False
+
+
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
 
@@ -400,3 +407,10 @@ class Archive(object):
 			return ArchiveFileData(ar_obj=self, header=name)
 
 		raise ValueError(f"Can't look up file using type {type(name)}, expected bytes or ArchiveFileHeader")
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, _exc_type, _exc_value, _traceback):
+		self.close()
+		return False

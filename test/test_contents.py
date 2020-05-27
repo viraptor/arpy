@@ -45,6 +45,14 @@ class ArZipLike(unittest.TestCase):
 		self.assertRaises(KeyError, self.ar.open, arpy.ArchiveFileHeader(content, 0))
 
 
+class ArContext(unittest.TestCase):
+	def test_context(self):
+		with arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar')) as ar:
+			self.assertIsInstance(ar, arpy.Archive)
+			with ar.open(b'file1') as f:
+				self.assertIsInstance(f, arpy.ArchiveFileData)
+
+
 class ArContentsSeeking(unittest.TestCase):
 	def setUp(self):
 		self.ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar'))
