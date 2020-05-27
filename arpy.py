@@ -396,7 +396,7 @@ class Archive(object):
 		if isinstance(name, bytes):
 			ar_file = self.archived_files.get(name)
 			if ar_file is None:
-				raise KeyError(f"There is no item named {name!r} in the archive")
+				raise KeyError("There is no item named %r in the archive" % (name,))
 
 			return ar_file
 
@@ -406,7 +406,7 @@ class Archive(object):
 
 			return ArchiveFileData(ar_obj=self, header=name)
 
-		raise ValueError(f"Can't look up file using type {type(name)}, expected bytes or ArchiveFileHeader")
+		raise ValueError("Can't look up file using type %s, expected bytes or ArchiveFileHeader" % (type(name),))
 
 	def __enter__(self):
 		return self
