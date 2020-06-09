@@ -41,7 +41,7 @@ class ArContents(unittest.TestCase):
 		m_extract.assert_has_calls([
 			call(b'file1', b'/foobar/file1'),
 			call(b'file2', b'/foobar/file2'),
-		])
+		], any_order=True)
 		m_makedirs.assert_called_with(b'/foobar', exist_ok=True)
 
 	def test_extractall2(self):
