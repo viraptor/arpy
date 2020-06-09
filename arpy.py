@@ -421,8 +421,11 @@ class Archive(object):
 
 		raise ValueError("Can't look up file using type %s, expected bytes or ArchiveFileHeader" % (type(name),))
 
-	def extract(self, member: bytes, path=None):
+	def extract(self, member: bytes, path: Optional[Union[str,bytes]]=None) -> None:
 		filename = os.path.basename(member)
+		if path is None:
+			path = os.getcwd()
+
 		if isinstance(path, bytes):
 			filepath = os.path.join(path, filename)
 		else:
@@ -437,7 +440,7 @@ class Archive(object):
 					break
 				f.write(buffer)
 
-	def extractall(self, path: Union[str, bytes], members: Optional[List[bytes]]=None):
+	def extractall(self, path: Union[str, bytes], members: Optional[List[bytes]]=None) -> None:
 		self.read_all_headers()
 
 		normpath = os.path.normpath(path)
@@ -445,7 +448,7 @@ class Archive(object):
 			normpath = normpath.encode('utf-8')
 
 		if members is None:
-			sources = self.archived_files.keys()
+			sources = list(self.archived_files.keys())
 		else:
 			sources = members
 
@@ -456,7 +459,7 @@ class Archive(object):
 			norm_filepath = os.path.normpath(filepath)
 
 			if os.path.commonpath([normpath, norm_filepath]) != normpath:
-				raise ExtractBreakoutAttempt("file %s would be extracted below specified path" % (member,))
+				raise ExtractBreakoutAttempt("file %r would be extracted below specified path" % (member,))
 
 			norm_dirpath = os.path.normpath(os.path.join(normpath, member_dir))
 			os.makedirs(norm_dirpath, exist_ok=True)
