@@ -14,6 +14,45 @@ class ArContents(unittest.TestCase):
 		ar.close()
 
 
+class ArZipLike(unittest.TestCase):
+	def setUp(self):
+		self.ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar'))
+
+	def test_listnames(self):
+		self.assertEqual([b'file1', b'file2'], self.ar.namelist())
+		self.ar.close()
+
+	def test_listheaders(self):
+		headers = self.ar.infolist()
+		self.assertEqual(2, len(headers))
+		self.assertEqual(b'file1', headers[0].name)
+		self.assertEqual(b'file2', headers[1].name)
+
+	def test_openname(self):
+		f = self.ar.open(b'file1')
+		self.assertEqual(b'file1', f.header.name)
+
+	def test_openname_fail(self):
+		self.assertRaises(KeyError, self.ar.open, b'xxxx')
+
+	def test_openheader(self):
+		header = self.ar.infolist()[0]
+		f = self.ar.open(header)
+		self.assertEqual(b'file1', f.header.name)
+
+	def test_openheader_fail(self):
+		content = b"file1/          1364071329  1000  100   100644  5000      `\n"
+		self.assertRaises(KeyError, self.ar.open, arpy.ArchiveFileHeader(content, 0))
+
+
+class ArContext(unittest.TestCase):
+	def test_context(self):
+		with arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar')) as ar:
+			self.assertIsInstance(ar, arpy.Archive)
+			with ar.open(b'file1') as f:
+				self.assertIsInstance(f, arpy.ArchiveFileData)
+
+
 class ArContentsSeeking(unittest.TestCase):
 	def setUp(self):
 		self.ar = arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar'))

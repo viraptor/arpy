@@ -42,17 +42,26 @@ The list of file names can be listed through:
 ar.archived_files.keys()
 
 Files themselves can be opened by getting the value of:
-f = ar.archived_files['filename']
+f = ar.archived_files[b'filename']
 
 and read through:
 f.read([length])
 
-random access through seek and tell functions is supported on the archived files
+random access through seek and tell functions is supported on the archived files.
+
+zipfile-like interface is also available:
+
+ar.namelist() will return a list of names (with possible duplicates)
+ar.infolist() will return a list of headers
+
+Use ar.open(name / header) to get the specific file.
+
+You can also use context manager syntax with either the ar file or its contents.
 """
 
 import io
 import struct
-from typing import Optional, List, Dict, BinaryIO, cast
+from typing import Optional, List, Dict, BinaryIO, cast, Union
 
 
 HEADER_BSD = 1
@@ -186,6 +195,13 @@ class ArchiveFileData(io.IOBase):
 	def seekable(self) -> bool:
 		return self.arobj.seekable
 
+	def __enter__(self):
+		return self
+
+	def __exit__(self, _exc_type, _exc_value, _traceback):
+		return False
+
+
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
 
@@ -198,6 +214,7 @@ class Archive(object):
 		else:
 			raise ValueError("either filename or fileobj argument needs to be given")
 		self.position = 0
+		self.reached_eof = False
 		self._detect_seekable()
 		if self._read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
 			raise ArchiveFormatError("file is missing the global header")
@@ -233,6 +250,7 @@ class Archive(object):
 			while self.position < offset:
 				if not self._read(min(4096, offset - self.position)):
 					# reached EOF before target offset
+					self.reached_eof = True
 					return
 
 	def __read_file_header(self, offset: int) -> Optional[ArchiveFileHeader]:
@@ -242,6 +260,7 @@ class Archive(object):
 		header = self._read(HEADER_LEN)
 
 		if len(header) == 0:
+			self.reached_eof = True
 			return None
 		if len(header) < HEADER_LEN:
 			raise ArchiveFormatError("file header too short")
@@ -345,9 +364,62 @@ class Archive(object):
 
 	def read_all_headers(self) -> None:
 		""" Reads all headers """
+		if self.reached_eof:
+			return
+
 		while self.read_next_header() is not None:
 			pass
 
 	def close(self) -> None:
 		""" Closes the archive file descriptor """
 		self.file.close()
+
+	### implement a zipfile-like interface as well
+
+	def namelist(self) -> List[bytes]:
+		"""
+		Return the names of files stored in the archive
+
+		If there are multiple files of the same name, there may be duplicates in the list.
+		"""
+		self.read_all_headers()
+		return [header.name for header in self.headers if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU)]
+
+	def infolist(self) -> List[ArchiveFileHeader]:
+		"""
+		Return the headers of files stored in the archive
+
+		These can be used with .open() to get the contents.
+		"""
+		self.read_all_headers()
+		return [header for header in self.headers if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU)]
+
+	def open(self, name: Union[bytes,ArchiveFileHeader]) -> ArchiveFileData:
+		"""
+		Return a file-like object based on the provided name or header
+
+		The name can be either a filename, or a header obtained from .read_next_header() or .infolist()
+		"""
+		self.read_all_headers()
+
+		if isinstance(name, bytes):
+			ar_file = self.archived_files.get(name)
+			if ar_file is None:
+				raise KeyError("There is no item named %r in the archive" % (name,))
+
+			return ar_file
+
+		if isinstance(name, ArchiveFileHeader):
+			if name not in self.headers:
+				raise KeyError("Provided header does not match this archive")
+
+			return ArchiveFileData(ar_obj=self, header=name)
+
+		raise ValueError("Can't look up file using type %s, expected bytes or ArchiveFileHeader" % (type(name),))
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, _exc_type, _exc_value, _traceback):
+		self.close()
+		return False

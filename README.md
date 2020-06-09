@@ -11,6 +11,23 @@ Usage
 Standard file usage:
 --------------------
 
+With context managers:
+
+    with arpy.Archive('file.ar') as ar:
+        print("files: %s" % ar.namelist())
+        with ar.open('content.txt') as f:
+            print(f.read())
+
+Via headers for duplicate names:
+
+    with arpy.Archive('file.ar') as ar:
+        for header in ar.infolist():
+            print("file: %s" % header.name)
+            with ar.open(header) as f:
+                print(f.read())
+
+Or directly:
+
     ar = arpy.Archive('file.ar'))
     ar.read_all_headers()
 
