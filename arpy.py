@@ -207,7 +207,7 @@ class ArchiveFileDataThin(ArchiveFileData):
 
     def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader):
                 ArchiveFileData.__init__(self, ar_obj, header)
-                self.the_file=open(os.path.dirname(ar_obj.file.name)+ "/"+header.name.decode(),"rb")
+                self.file_path=os.path.dirname(ar_obj.file.name)+ "/"+header.name.decode()
 
 
     def read(self, size: Optional[int] = None) -> bytes:
@@ -215,36 +215,14 @@ class ArchiveFileDataThin(ArchiveFileData):
         if size is None:
             size = self.header.size
 
-        data=self.the_file.read(size)
+        with open(self.file_path) as f:
+            f.seek(self.last_offset)
+            data=f.read(size)
 
         if len(data) < size:
             raise ArchiveAccessError("incorrect archive file")
-
+        self.last_offset += size
         return data
-
-    def tell(self) -> int:
-        """ Returns the position in archived file, simulates file.tell """
-        return self.the_file.tell()
-
-    def seek(self, offset: int, whence: int = 0) -> int:
-        """ Sets the position in archived file, simulates file.seek """
-        if whence == 0:
-            pass # absolute
-        elif whence == 1:
-            offset += self.tell()
-        elif whence == 2:
-            offset += self.header.size
-        else:
-            raise ArchiveAccessError("invalid argument")
-
-        if offset < 0 or offset > self.header.size:
-            raise ArchiveAccessError("incorrect file position")
-        self.the_file.seek( offset)
-
-        return offset
-
-    def seekable(self) -> bool:
-        return self.the_file.seekable()
 
 class Archive(object):
     """ Archive object allowing reading of *.ar files """
