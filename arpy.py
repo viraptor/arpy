@@ -61,6 +61,7 @@ You can also use context manager syntax with either the ar file or its contents.
 
 import io
 import struct
+import os.path
 from typing import Optional, List, Dict, BinaryIO, cast, Union
 
 
@@ -201,6 +202,27 @@ class ArchiveFileData(io.IOBase):
 	def __exit__(self, _exc_type, _exc_value, _traceback):
 		return False
 
+class ArchiveFileDataThin(ArchiveFileData):
+	""" File-like object used for reading a thin archived file """
+
+	def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader):
+				ArchiveFileData.__init__(self, ar_obj, header)
+				self.file_path=os.path.dirname(ar_obj.file.name)+ "/"+header.name.decode()
+
+
+	def read(self, size: Optional[int] = None) -> bytes:
+		""" Reads the data from the archived file, simulates file.read """
+		if size is None:
+			size = self.header.size - self.last_offset
+
+		with open(self.file_path, "rb") as f:
+			f.seek(self.last_offset)
+			data=f.read(size)
+
+		if len(data) < size:
+			raise ArchiveAccessError("incorrect archive file")
+		self.last_offset += size
+		return data
 
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
@@ -216,7 +238,12 @@ class Archive(object):
 		self.position = 0
 		self.reached_eof = False
 		self._detect_seekable()
-		if self._read(GLOBAL_HEADER_LEN) != b"!<arch>\n":
+		global_header=self._read(GLOBAL_HEADER_LEN)
+		if global_header == b"!<arch>\n":
+			self.file_data_class = ArchiveFileData
+		elif global_header == b"!<thin>\n":
+			self.file_data_class = ArchiveFileDataThin
+		else:
 			raise ArchiveFormatError("file is missing the global header")
 
 		self.next_header_offset = GLOBAL_HEADER_LEN
@@ -346,7 +373,7 @@ class Archive(object):
 		if header is not None:
 			self.headers.append(header)
 			if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU):
-				self.archived_files[header.name] = ArchiveFileData(self, header)
+				self.archived_files[header.name] = self.file_data_class(self, header)
 
 		return header
 
