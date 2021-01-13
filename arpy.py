@@ -213,7 +213,7 @@ class ArchiveFileDataThin(ArchiveFileData):
 	def read(self, size: Optional[int] = None) -> bytes:
 		""" Reads the data from the archived file, simulates file.read """
 		if size is None:
-			size = self.header.size
+			size = self.header.size - self.last_offset
 
 		with open(self.file_path, "rb") as f:
 			f.seek(self.last_offset)
