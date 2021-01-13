@@ -240,9 +240,9 @@ class Archive(object):
 		self._detect_seekable()
 		global_header=self._read(GLOBAL_HEADER_LEN)
 		if global_header == b"!<arch>\n":
-			self.thin=False
+			self.file_data_class = ArchiveFileData
 		elif global_header == b"!<thin>\n":
-			self.thin=True
+			self.file_data_class = ArchiveFileDataThin
 		else:
 			raise ArchiveFormatError("file is missing the global header")
 
@@ -373,10 +373,7 @@ class Archive(object):
 		if header is not None:
 			self.headers.append(header)
 			if header.type in (HEADER_BSD, HEADER_NORMAL, HEADER_GNU):
-				if self.thin:
-					self.archived_files[header.name] = ArchiveFileDataThin(self, header)
-				else:
-					self.archived_files[header.name] = ArchiveFileData(self, header)
+				self.archived_files[header.name] = self.file_data_class(self, header)
 
 		return header
 
