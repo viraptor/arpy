@@ -215,7 +215,7 @@ class ArchiveFileDataThin(ArchiveFileData):
 		if size is None:
 			size = self.header.size
 
-		with open(self.file_path) as f:
+		with open(self.file_path, "rb") as f:
 			f.seek(self.last_offset)
 			data=f.read(size)
 
