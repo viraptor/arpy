@@ -1,5 +1,4 @@
 import arpy
-import io
 import unittest
 import os
 
