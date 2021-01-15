@@ -2,6 +2,7 @@ import arpy
 import unittest
 import os
 import io
+from unittest.mock import patch, mock_open, call
 
 class ArContents(unittest.TestCase):
 	def test_archive_contents(self):
@@ -13,6 +14,44 @@ class ArContents(unittest.TestCase):
 		self.assertEqual(b'test_in_file_2\n', f2_contents)
 		ar.close()
 
+	def test_extract(self):
+		m = mock_open()
+		with arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar')) as ar:
+			with patch('arpy.open', m):
+				ar.extract(b'file1', '/foobar')
+
+		m().write.assert_called_once_with(b'test_in_file_1\n')
+		m().__exit__.assert_called_once_with(None, None, None)
+
+	def test_extract_byte_path(self):
+		m = mock_open()
+		with arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar')) as ar:
+			with patch('arpy.open', m):
+				ar.extract(b'file1', b'/foobar')
+
+		m().write.assert_called_once_with(b'test_in_file_1\n')
+		m().__exit__.assert_called_once_with(None, None, None)
+
+	def test_extractall(self):
+		with arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar')) as ar:
+			with patch.object(ar, 'extract') as m_extract:
+				with patch('os.makedirs') as m_makedirs:
+					ar.extractall('/foobar')
+
+		m_extract.assert_has_calls([
+			call(b'file1', b'/foobar/file1'),
+			call(b'file2', b'/foobar/file2'),
+		], any_order=True)
+		m_makedirs.assert_called_with(b'/foobar', exist_ok=True)
+
+	def test_extractall2(self):
+		with arpy.Archive(os.path.join(os.path.dirname(__file__), 'contents.ar')) as ar:
+			with patch.object(ar, 'extract') as m_extract:
+				with patch('os.makedirs') as m_makedirs:
+					ar.extractall('/foobar', [b'file2'])
+
+		m_extract.assert_called_once_with(b'file2', b'/foobar/file2')
+		m_makedirs.assert_called_once_with(b'/foobar', exist_ok=True)
 
 class ArZipLike(unittest.TestCase):
 	def setUp(self):

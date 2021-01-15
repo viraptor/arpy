@@ -60,6 +60,7 @@ You can also use context manager syntax with either the ar file or its contents.
 """
 
 import io
+import os
 import struct
 import os.path
 from typing import Optional, List, Dict, BinaryIO, cast, Union
@@ -84,6 +85,9 @@ class ArchiveFormatError(Exception):
 	pass
 class ArchiveAccessError(IOError):
 	""" Raised on problems with accessing the archived files """
+	pass
+class ExtractBreakoutAttempt(IOError):
+	""" Raised on files which would be extracted above specified path """
 	pass
 
 class ArchiveFileHeader(object):
@@ -443,6 +447,50 @@ class Archive(object):
 			return ArchiveFileData(ar_obj=self, header=name)
 
 		raise ValueError("Can't look up file using type %s, expected bytes or ArchiveFileHeader" % (type(name),))
+
+	def extract(self, member: bytes, path: Optional[Union[str,bytes]]=None) -> None:
+		filename = os.path.basename(member)
+		if path is None:
+			path = os.getcwd()
+
+		if isinstance(path, bytes):
+			filepath = os.path.join(path, filename)
+		else:
+			filepath = os.path.join(path.encode('utf-8'), filename)
+		buf_size = 8*1024
+
+		ar_member = self.open(member)
+		with open(filepath, 'wb') as f:
+			while True:
+				buffer = ar_member.read(buf_size)
+				if not len(buffer):
+					break
+				f.write(buffer)
+
+	def extractall(self, path: Union[str, bytes], members: Optional[List[bytes]]=None) -> None:
+		self.read_all_headers()
+
+		normpath = os.path.normpath(path)
+		if isinstance(normpath, str):
+			normpath = normpath.encode('utf-8')
+
+		if members is None:
+			sources = list(self.archived_files.keys())
+		else:
+			sources = members
+
+		for member in sources:
+			member_dir = os.path.dirname(member)
+			member_name = os.path.basename(member)
+			filepath = os.path.join(normpath, member_dir, member_name)
+			norm_filepath = os.path.normpath(filepath)
+
+			if os.path.commonpath([normpath, norm_filepath]) != normpath:
+				raise ExtractBreakoutAttempt("file %r would be extracted below specified path" % (member,))
+
+			norm_dirpath = os.path.normpath(os.path.join(normpath, member_dir))
+			os.makedirs(norm_dirpath, exist_ok=True)
+			self.extract(member, norm_filepath)
 
 	def __enter__(self):
 		return self
