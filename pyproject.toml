@@ -1,5 +1,33 @@
 [build-system]
-requires = ["setuptools>=42.2", "wheel", "setuptools_scm[toml]>=3.4.3"]
+requires = ["setuptools>=61.2.0", "wheel", "setuptools_scm[toml]>=3.4.3"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "arpy"
+authors = [{name = "Stanisław Pitucha", email = "viraptor@gmail.com"}]
+license = {text = "BSD-2-Clause"}
+description = 'Library for accessing "ar" files'
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: System :: Archiving",
+]
+urls = {Homepage = "https://github.com/viraptor/arpy"}
+dynamic = ["version"]
+
+[project.readme]
+text = """'arpy' is a library for accessing the archive files and reading the contents. It supports extended long filenames in both GNU and BSD format. Right now it does not support the symbol tables, but can ignore them gracefully.
+Usage instructions are included in the module docstring. Works with python >=3.5, as well as pypy3. (for python `2.x` see versions `1.*`)"""
+content-type = "text/markdown"
+
+[tool.setuptools]
+py-modules = ["arpy"]
+include-package-data = false
 
 [tool.setuptools_scm]
