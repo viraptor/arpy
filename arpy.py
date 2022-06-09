@@ -89,7 +89,7 @@ class ArchiveAccessError(IOError):
 class ArchiveFileHeader(object):
 	""" File header of an archived file, or a special data segment """
 
-	def __init__(self, header: bytes, offset: int):
+	def __init__(self, header: bytes, offset: int) -> None:
 		""" Creates a new header from binary data starting at a specified offset """
 
 		name, timestamp, uid, gid, mode, size, magic = struct.unpack(
@@ -148,7 +148,7 @@ class ArchiveFileHeader(object):
 class ArchiveFileData(io.IOBase):
 	""" File-like object used for reading an archived file """
 
-	def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader):
+	def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader) -> None:
 		"""
 		Creates a new proxy for the archived file, reusing the archive's file descriptor
 		"""
@@ -196,16 +196,16 @@ class ArchiveFileData(io.IOBase):
 	def seekable(self) -> bool:
 		return self.arobj.seekable
 
-	def __enter__(self):
+	def __enter__(self) -> "ArchiveFileData":
 		return self
 
-	def __exit__(self, _exc_type, _exc_value, _traceback):
+	def __exit__(self, _exc_type, _exc_value, _traceback) -> bool:
 		return False
 
 class ArchiveFileDataThin(ArchiveFileData):
 	""" File-like object used for reading a thin archived file """
 
-	def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader):
+	def __init__(self, ar_obj: "Archive", header: ArchiveFileHeader) -> None:
 				ArchiveFileData.__init__(self, ar_obj, header)
 				self.file_path=os.path.dirname(ar_obj.file.name)+ "/"+header.name.decode()
 
@@ -227,7 +227,7 @@ class ArchiveFileDataThin(ArchiveFileData):
 class Archive(object):
 	""" Archive object allowing reading of *.ar files """
 
-	def __init__(self, filename: Optional[str] = None, fileobj: Optional[BinaryIO] = None):
+	def __init__(self, filename: Optional[str] = None, fileobj: Optional[BinaryIO] = None) -> None:
 		self.headers = cast(List[ArchiveFileHeader], [])
 		if fileobj:
 			self.file = fileobj
@@ -444,9 +444,9 @@ class Archive(object):
 
 		raise ValueError("Can't look up file using type %s, expected bytes or ArchiveFileHeader" % (type(name),))
 
-	def __enter__(self):
+	def __enter__(self) -> "Archive":
 		return self
 
-	def __exit__(self, _exc_type, _exc_value, _traceback):
+	def __exit__(self, _exc_type, _exc_value, _traceback) -> bool:
 		self.close()
 		return False
