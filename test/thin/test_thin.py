@@ -40,3 +40,6 @@ class Thin(unittest.TestCase):
         self.assertEqual(arpy_content, real_content)
         self.assertEqual(arpy_entry.header.size, len(real_content))
         ar.close()
+
+if __name__ == "__main__":
+	unittest.main()

@@ -28,3 +28,6 @@ class BSDExtendedNames(unittest.TestCase):
 			sorted(ar.archived_files.keys()))
 		self.assertEqual(3, len(ar.headers))
 		ar.close()
+
+if __name__ == "__main__":
+	unittest.main()

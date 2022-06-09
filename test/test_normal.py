@@ -62,3 +62,6 @@ class ArchiveIteration(unittest.TestCase):
 		self.assertEqual(b'short', short.header.name)
 		self.assertRaises(StopIteration, ar_iterator.next)
 		ar.close()
+
+if __name__ == "__main__":
+	unittest.main()
