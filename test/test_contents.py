@@ -160,3 +160,6 @@ class ArContentsNoSeeking(unittest.TestCase):
 		f1 = ar.next()
 		self.assertFalse(f1.seekable())
 		ar.close()
+
+if __name__ == "__main__":
+	unittest.main()

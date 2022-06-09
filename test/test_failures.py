@@ -42,3 +42,6 @@ class SimpleNames(unittest.TestCase):
 			b'/9              1297730011  1000  1000  100644  0         `\n'
 		ar = arpy.Archive(fileobj=io.BytesIO(bad_ar))
 		self.assertRaises(arpy.ArchiveFormatError, ar.read_all_headers)
+
+if __name__ == "__main__":
+	unittest.main()
