@@ -45,7 +45,8 @@ class SimpleNames(unittest.TestCase):
 		ar.close()
 
 	def test_fileobj(self):
-		data = open(os.path.join(os.path.dirname(__file__), 'normal.ar'), "rb").read()
+		with open(os.path.join(os.path.dirname(__file__), 'normal.ar'), "rb") as f:
+			data = f.read()
 		ar = arpy.Archive(fileobj=io.BytesIO(data))
 		ar.read_all_headers()
 		self.assertEqual([b'short'],
