@@ -314,8 +314,14 @@ class Archive(object):
 		self.gnu_table = {}
 
 		position = 0
-		for filename in table_string.split(b"\n"):
-			self.gnu_table[position] = filename[:-1] # remove trailing '/'
+		if b"\x00" in table_string:
+			split_char = b"\x00"
+		else:
+			split_char = b"\n"
+		for filename in table_string.split(split_char):
+			self.gnu_table[position] = filename
+			if self.gnu_table[position].endswith(b"/"):
+				self.gnu_table[position] = self.gnu_table[position][:-1] # remove trailing '/'
 			position += len(filename) + 1
 
 	def __fix_name(self, header: ArchiveFileHeader) -> int:
