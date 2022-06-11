@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name='arpy',
-		version='2.2.0',
+		version='2.3.0',
 		description='Library for accessing "ar" files',
 		author='Stanisław Pitucha',
 		author_email='viraptor@gmail.com',
