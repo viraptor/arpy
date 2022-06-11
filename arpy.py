@@ -199,7 +199,7 @@ class ArchiveFileData(io.IOBase):
 	def __enter__(self) -> "ArchiveFileData":
 		return self
 
-	def __exit__(self, _exc_type, _exc_value, _traceback) -> bool:
+	def __exit__(self, _exc_type, _exc_value, _traceback):
 		return False
 
 class ArchiveFileDataThin(ArchiveFileData):
@@ -447,6 +447,6 @@ class Archive(object):
 	def __enter__(self) -> "Archive":
 		return self
 
-	def __exit__(self, _exc_type, _exc_value, _traceback) -> bool:
+	def __exit__(self, _exc_type, _exc_value, _traceback):
 		self.close()
 		return False
