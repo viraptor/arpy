@@ -99,7 +99,7 @@ class ArchiveFileHeader(object):
 
 		if name.startswith(b"#1/"):
 			self.type = HEADER_BSD
-		elif name.startswith(b"//"):
+		elif name.startswith(b"//") or name.startswith(b"/SYM64/"):
 			self.type = HEADER_GNU_TABLE
 		elif name.strip() == b"/":
 			self.type = HEADER_GNU_SYMBOLS
